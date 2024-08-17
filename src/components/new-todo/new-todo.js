@@ -1,7 +1,27 @@
 import React, { Component } from "react";
+import { PropTypes } from "prop-types";
+
 import "./new-todo.css";
 
 export default class NewTaskForm extends Component {
+  static defaultProps = {
+    addTask: (text) => {
+      const newTodo = this.createTask(text);
+
+      this.setState(({ todos }) => {
+        const newTodos = [...todos, newTodo];
+
+        return {
+          todos: newTodos,
+        };
+      });
+    },
+  };
+
+  static propTypes = {
+    addTask: PropTypes.func.isRequired,
+  };
+
   state = {
     description: "",
   };

@@ -29,6 +29,7 @@ export default class App extends Component {
       id: this.startId++,
       description,
       done: false,
+      createDate: new Date(),
     };
   }
 
@@ -39,11 +40,11 @@ export default class App extends Component {
   };
 
   addTask = (text) => {
+    if (!text) return;
     const newTodo = this.createTask(text);
 
     this.setState(({ todos }) => {
       const newTodos = [...todos, newTodo];
-
       return {
         todos: newTodos,
       };

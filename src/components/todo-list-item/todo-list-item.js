@@ -1,8 +1,45 @@
 import React, { Component } from "react";
+import { PropTypes } from "prop-types";
+import CreatedTime from "../created-time";
+
 import "./todo-list-item.css";
-import { formatDistanceToNow } from "date-fns";
 
 export default class Task extends Component {
+  static defaultProps = {
+    todo: { description: "default", id: 1, done: false },
+    deleteTask: (id) => {
+      this.setState(({ todos }) => {
+        const updateTodos = todos.filter((item) => item.id !== id);
+
+        return {
+          todos: updateTodos,
+        };
+      });
+    },
+    completedTask: (id) => {
+      this.setState(({ todos }) => {
+        const newTodos = todos.map((item) => {
+          if (item.id !== id) return item;
+          item.done = !item.done;
+          return item;
+        });
+        return {
+          todos: newTodos,
+        };
+      });
+    },
+  };
+
+  static propTypes = {
+    todo: PropTypes.shape({
+      description: PropTypes.string.isRequired,
+      id: PropTypes.number.isRequired,
+      done: PropTypes.bool.isRequired,
+    }),
+    deleteTask: PropTypes.func.isRequired,
+    completedTask: PropTypes.func.isRequired,
+  };
+
   state = {
     edit: false,
     description: "",
@@ -48,24 +85,18 @@ export default class Task extends Component {
       classNames = "editing";
     }
 
-    const currentDate = new Date(Date.now());
-
     return (
       <li className={classNames}>
         <div className="view">
           <input
             className="toggle"
             type="checkbox"
+            checked={done ? true : false}
             onChange={() => completedTask(id)}
           />
           <label>
             <span className="description">{description}</span>
-            <span className="created">
-              {formatDistanceToNow(currentDate, {
-                addSuffix: true,
-                includeSeconds: true,
-              })}
-            </span>
+            <CreatedTime className="created" {...this.props.todo} />
           </label>
           <button className="icon icon-edit" onClick={this.onEditing}></button>
           <button
@@ -86,21 +117,3 @@ export default class Task extends Component {
     );
   }
 }
-
-/*       <li class="editing">
-        <div class="view">
-          <input class="toggle" type="checkbox" />
-          <label>
-            <span class="description">Editing task</span>
-            <span class="created">
-              {formatDistanceToNow(currentDate, {
-                addSuffix: true,
-                includeSeconds: true,
-              })}
-            </span>
-          </label>
-          <button class="icon icon-edit"></button>
-          <button class="icon icon-destroy"></button>
-        </div>
-        
-      </li> */
