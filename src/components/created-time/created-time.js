@@ -1,46 +1,51 @@
-import React, { Component } from "react";
-import { PropTypes } from "prop-types";
-import { formatDistanceToNow } from "date-fns";
+import React, { Component } from 'react'
+import { formatDistanceToNow } from 'date-fns'
+import { PropTypes } from 'prop-types'
 
-import "./created-time.css";
+import './created-time.css'
 
 export default class CreatedTime extends Component {
-  static defaultProps = {
-    interval: 5000,
-    createDate: new Date(),
-  };
-
-  static propTypes = {
-    interval: PropTypes.number,
-    createDate: PropTypes.any.isRequired,
-  };
-
-  state = {
-    createDate: formatDistanceToNow(this.props.createDate, {
-      addSuffix: true,
-      includeSeconds: true,
-    }),
-  };
-
-  componentDidMount() {
-    this.timerId = setInterval(() => this.tick(), this.props.interval);
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.timerId);
-  }
-
-  tick() {
-    this.setState({
-      createDate: formatDistanceToNow(this.props.createDate, {
+  constructor(props) {
+    super(props)
+    this.state = {
+      createDate: formatDistanceToNow(props.createDate, {
         addSuffix: true,
         includeSeconds: true,
       }),
-    });
+    }
+  }
+
+  componentDidMount() {
+    const { interval } = this.props
+    this.timerId = setInterval(() => this.tick(), interval)
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timerId)
+  }
+
+  tick() {
+    const { createDate } = this.props
+    this.setState({
+      createDate: formatDistanceToNow(createDate, {
+        addSuffix: true,
+        includeSeconds: true,
+      }),
+    })
   }
 
   render() {
-    const { createDate } = this.state;
-    return <span className="created">created {createDate}</span>;
+    const { createDate } = this.state
+    return <span className="created">created {createDate}</span>
   }
+}
+
+CreatedTime.defaultProps = {
+  interval: 5000,
+  createDate: new Date(),
+}
+
+CreatedTime.propTypes = {
+  interval: PropTypes.number,
+  createDate: PropTypes.instanceOf(Date),
 }

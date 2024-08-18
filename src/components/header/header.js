@@ -1,17 +1,17 @@
-import React, { Component } from "react";
-import NewTaskForm from "../new-todo";
+import React from 'react'
 
-import "./header.css";
+import NewTaskForm from '../new-todo'
 
-export default class Header extends Component {
-  render() {
-    const { addTask } = this.props;
+import './header.css'
 
-    return (
-      <header className="header">
-        <h1>todos</h1>
-        <NewTaskForm addTask={addTask} />
-      </header>
-    );
-  }
+function Header(prop) {
+  const { addTask } = prop
+  return (
+    <header className="header">
+      <h1>todos</h1>
+      <NewTaskForm addTask={addTask} />
+    </header>
+  )
 }
+
+export default Header
