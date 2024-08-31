@@ -1,5 +1,5 @@
 /* eslint-disable jsx-a11y/label-has-associated-control */
-import React, { Component } from 'react'
+import React, { useState } from 'react'
 import { PropTypes } from 'prop-types'
 
 import CreatedTime from '../created-time'
@@ -7,79 +7,69 @@ import Timer from '../timer'
 
 import './todo-list-item.css'
 
-export default class Task extends Component {
-  constructor(prop) {
-    super(prop)
-    this.state = {
-      edit: false,
-      description: '',
-    }
+function Task(props) {
+  const [edit, setEdit] = useState(false)
+  const [description, setDescription] = useState('')
+
+  const { editingTask, todo, deleteTask, completedTask } = props
+
+  const onDescriptionEditing = (event) => {
+    setDescription(event.target.value)
   }
 
-  onDescriptionEditing = (event) => {
-    this.setState({
-      description: event.target.value,
-    })
+  const onEditing = () => {
+    setEdit((state) => !state)
   }
 
-  onEditing = () => {
-    this.setState(({ edit }) => ({
-      edit: !edit,
-    }))
-  }
-
-  onSubmit = (event) => {
+  const onSubmit = (event) => {
     event.preventDefault()
-    const { editingTask, todo } = this.props
-    const { description } = this.state
+
     editingTask(description, todo.id)
-    this.setState({ description: '' })
-    this.setState(({ edit }) => ({ edit: !edit }))
+
+    setDescription('')
+    setEdit((state) => !state)
   }
 
-  render() {
-    const { todo } = this.props
-    const { description, id, done } = todo
-    const { deleteTask, completedTask } = this.props
-    const { edit, stateDescription } = this.state
+  const { description: title, id, done } = todo
 
-    let inputClassName = 'edit'
-    let classNames = ''
-    if (done) {
-      classNames = 'completed'
-    }
-    if (edit) {
-      inputClassName = 'edit'
-      classNames = 'editing'
-    }
-
-    return (
-      <li className={classNames}>
-        <div className="view">
-          <input className="toggle" type="checkbox" checked={done} onChange={() => completedTask(id)} />
-          <label htmlFor="description">
-            <span className="title">{description}</span>
-            <Timer />
-            <CreatedTime className="created" todo={todo} />
-          </label>
-          <button type="button" aria-label="edit" className="icon icon-edit" onClick={this.onEditing} />
-          <button type="button" aria-label="destroy" className="icon icon-destroy" onClick={() => deleteTask(id)} />
-        </div>
-        <form onSubmit={this.onSubmit}>
-          <input
-            type="text"
-            className={inputClassName}
-            placeholder="Editing task"
-            onChange={this.onDescriptionEditing}
-            value={stateDescription}
-          />
-        </form>
-      </li>
-    )
+  let inputClassName = 'edit'
+  let classNames = ''
+  if (done) {
+    classNames = 'completed'
   }
+  if (edit) {
+    inputClassName = 'edit'
+    classNames = 'editing'
+  }
+
+  return (
+    <li className={classNames}>
+      <div className="view">
+        <input className="toggle" type="checkbox" checked={done} onChange={() => completedTask(id)} />
+        <label htmlFor="description">
+          <span className="title">{title}</span>
+          <Timer todo={todo} />
+          <CreatedTime todo={todo} />
+        </label>
+        <button type="button" aria-label="edit" className="icon icon-edit" onClick={onEditing} />
+        <button type="button" aria-label="destroy" className="icon icon-destroy" onClick={() => deleteTask(id)} />
+      </div>
+      <form onSubmit={onSubmit}>
+        <input
+          type="text"
+          className={inputClassName}
+          placeholder="Editing task"
+          onChange={onDescriptionEditing}
+          value={description}
+        />
+      </form>
+    </li>
+  )
 }
 
-Task.defaultProps = {
+export default Task
+
+Task.prototype.defaultProps = {
   todo: { description: 'default', id: 1, done: false },
   deleteTask: (id) => {
     this.setState(({ todos }) => {

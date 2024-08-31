@@ -1,48 +1,38 @@
-import React, { Component } from 'react'
+import React, { useState } from 'react'
 import { PropTypes } from 'prop-types'
 
 import './new-todo.css'
 
-export default class NewTaskForm extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      description: '',
-    }
+function NewTaskForm(props) {
+  const [description, setDescription] = useState('')
+
+  const onDescriptionChange = (event) => {
+    setDescription(event.target.value)
   }
 
-  onDescriptionChange = (event) => {
-    this.setState({
-      description: event.target.value,
-    })
-  }
-
-  onSubmit = (event) => {
+  const onSubmit = (event) => {
     event.preventDefault()
-    const { addTask } = this.props
-    const { description } = this.state
+    const { addTask } = props
+
     addTask(description)
-    this.setState({
-      description: '',
-    })
+    setDescription('')
   }
 
-  render() {
-    const { description } = this.state
-    return (
-      <form onSubmit={this.onSubmit}>
-        <input
-          className="new-todo"
-          placeholder="What needs to be done?"
-          onChange={this.onDescriptionChange}
-          value={description}
-        />
-      </form>
-    )
-  }
+  return (
+    <form onSubmit={onSubmit}>
+      <input
+        className="new-todo"
+        placeholder="What needs to be done?"
+        onChange={onDescriptionChange}
+        value={description}
+      />
+    </form>
+  )
 }
 
-NewTaskForm.defaultProps = {
+export default NewTaskForm
+
+NewTaskForm.prototype.defaultProps = {
   addTask: (text) => {
     const newTodo = this.createTask(text)
 

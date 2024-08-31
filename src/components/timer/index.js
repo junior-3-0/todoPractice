@@ -1,39 +1,25 @@
-import React, { Component } from 'react'
+import React, { useEffect, useState } from 'react'
 
-export default class Timer extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      time: Date.now(),
-      outputTime: null,
-      playTimer: false,
-    }
-  }
+import useLocalStorage from '../hooks/localStorage'
 
-  componentDidUpdate(_, prevState) {
-    const { time } = this.state
-    if (prevState.time !== time) {
-      this.tick()
-    }
-  }
+function Timer(props) {
+  const { todo } = props
+  const [time, setTime] = useLocalStorage(Date.now(), `time${todo.id}`)
+  const [outputTime, setOutputTime] = useLocalStorage(null, `outputTime${todo.id}`)
+  const [playTimer, setPlayTimer] = useState(false)
+  let interval
 
-  componentWillUnmount() {
-    clearTimeout(this.interval)
-  }
-
-  play = () => {
-    const { outputTime } = this.state
+  const play = () => {
     let date = Date.now()
     if (outputTime) {
       date = Date.now() - (+outputTime.split(':')[0] * 1000 + +outputTime.split(':')[1] * 1000)
     }
-    this.setState({ time: date, playTimer: true })
+    setTime(date)
+    setPlayTimer(true)
   }
 
-  tick = () => {
-    clearInterval(this.interval)
-
-    const { time } = this.state
+  const tick = () => {
+    clearInterval(interval)
 
     const difference = (Date.now() - time) / 1000
 
@@ -43,30 +29,36 @@ export default class Timer extends Component {
     if (seconds < 10) seconds = `0${seconds}`
     if (minutes < 10) minutes = `0${minutes}`
 
-    this.setState({ outputTime: `${minutes}:${seconds}` })
+    setOutputTime(`${minutes}:${seconds}`)
 
-    this.interval = setInterval(this.tick, 1000)
+    interval = setInterval(tick, 1000)
   }
 
-  stop = () => {
-    this.setState({ playTimer: false })
-    clearInterval(this.interval)
+  const stop = () => {
+    setPlayTimer(false)
+    clearInterval(interval)
   }
 
-  render() {
-    const { outputTime, playTimer } = this.state
-    let iconPlay = 'icon icon-play'
-    let iconPause = 'icon icon-pause hidden'
+  useEffect(() => {
     if (playTimer) {
-      iconPlay += ' hidden'
-      iconPause = 'icon icon-pause'
+      tick()
     }
-    return (
-      <span className="description">
-        <button type="button" aria-label="play" className={iconPlay} onClick={this.play} />
-        <button type="button" aria-label="pause" className={iconPause} onClick={this.stop} />
-        <span className="timer-time">{outputTime}</span>
-      </span>
-    )
+    return () => clearInterval(interval)
+  }, [playTimer])
+
+  let iconPlay = 'icon icon-play'
+  let iconPause = 'icon icon-pause hidden'
+  if (playTimer) {
+    iconPlay += ' hidden'
+    iconPause = 'icon icon-pause'
   }
+  return (
+    <span className="description">
+      <button type="button" aria-label="play" className={iconPlay} onClick={play} />
+      <button type="button" aria-label="pause" className={iconPause} onClick={stop} />
+      <span className="timer-time">{outputTime}</span>
+    </span>
+  )
 }
+
+export default Timer

@@ -1,71 +1,67 @@
-import React, { Component } from 'react'
+import React, { useState } from 'react'
 
 import Header from '../header'
 import Main from '../main'
+import useLocalStorage from '../hooks/localStorage'
 import './app.css'
 
-export default class App extends Component {
-  startId = 10
+function App() {
+  let startId = 10
 
-  constructor(props) {
-    super(props)
-    this.state = {
-      todos: [this.createTask('completed task'), this.createTask('editing task'), this.createTask('Active task')],
-      show: '',
+  const createTask = (description) => {
+    startId += 1
+    return {
+      id: startId,
+      description,
+      done: false,
+      createDate: new Date(),
     }
   }
 
-  notCompleted = () => {
-    const { todos } = this.state
+  const [todos, setTodos] = useLocalStorage(
+    [createTask('completed task'), createTask('editing task'), createTask('Active task')],
+    'TODOS'
+  )
+  const [show, setShow] = useState('')
+
+  const notCompleted = () => {
     const todo = todos.filter((item) => !item.done).length
     return todo
   }
 
-  clearCompleted = () => {
-    const { todos } = this.state
+  const clearCompleted = () => {
     const newTodos = todos.filter((item) => !item.done)
-    this.setState({ todos: newTodos })
+    setTodos(newTodos)
   }
 
-  addTask = (text) => {
+  const addTask = (text) => {
     if (!text) return
-    const newTodo = this.createTask(text)
+    const newTodo = createTask(text)
 
-    this.setState(({ todos }) => {
-      const newTodos = [...todos, newTodo]
-      return {
-        todos: newTodos,
-      }
-    })
+    setTodos([...todos, newTodo])
   }
 
-  completedTask = (id) => {
-    this.setState(({ todos }) => {
-      const newTodos = todos.map((item) => {
+  const completedTask = (id) => {
+    setTodos((currTodos) => {
+      const newTodos = currTodos.map((item) => {
         if (item.id !== id) return item
         const newDone = { done: !item.done }
         const newItem = Object.assign(item, newDone)
         return newItem
       })
-      return {
-        todos: newTodos,
-      }
+      return newTodos
     })
   }
 
-  deleteTask = (id) => {
-    this.setState(({ todos }) => {
-      const updateTodos = todos.filter((item) => item.id !== id)
-
-      return {
-        todos: updateTodos,
-      }
+  const deleteTask = (id) => {
+    setTodos((currTodos) => {
+      const updateTodos = currTodos.filter((item) => item.id !== id)
+      return updateTodos
     })
   }
 
-  editingTask = (text, id) => {
+  const editingTask = (text, id) => {
     if (!text) return
-    const { todos } = this.state
     const newTodos = todos.map((item) => {
       if (item.id !== id) {
         return item
@@ -74,55 +70,43 @@ export default class App extends Component {
       const newItem = Object.assign(item, newDescr)
       return newItem
     })
-    this.setState({
-      todos: newTodos,
-    })
+    setTodos(newTodos)
   }
 
-  currentFilter = (event) => {
+  const currentFilter = (event) => {
     if (!event.target.closest('button')) return
     const buttons = document.querySelector('.filters').querySelectorAll('button')
     buttons.forEach((item) => item.classList.remove('selected'))
     event.target.classList.add('selected')
 
-    const show = event.target.textContent
+    const newShow = event.target.textContent
 
-    this.setState({ show })
+    setShow(newShow)
   }
 
-  createTask(description) {
-    this.startId += 1
-    return {
-      id: this.startId,
-      description,
-      done: false,
-      createDate: new Date(),
-    }
+  let todosVisible = todos
+
+  if (show === 'Completed') {
+    todosVisible = todos.filter((item) => item.done)
+  }
+  if (show === 'Active') {
+    todosVisible = todos.filter((item) => !item.done)
   }
 
-  render() {
-    let { todos } = this.state
-
-    const { show } = this.state
-    if (show === 'Completed') {
-      todos = todos.filter((item) => item.done)
-    }
-    if (show === 'Active') {
-      todos = todos.filter((item) => !item.done)
-    }
-    return (
-      <section className="todoapp">
-        <Header addTask={this.addTask} />
-        <Main
-          todos={todos}
-          completedTask={this.completedTask}
-          deleteTask={this.deleteTask}
-          currentFilter={this.currentFilter}
-          notCompleted={this.notCompleted}
-          clearCompleted={this.clearCompleted}
-          editingTask={this.editingTask}
-        />
-      </section>
-    )
-  }
+  return (
+    <section className="todoapp">
+      <Header addTask={addTask} />
+      <Main
+        todos={todosVisible}
+        completedTask={completedTask}
+        deleteTask={deleteTask}
+        currentFilter={currentFilter}
+        notCompleted={notCompleted}
+        clearCompleted={clearCompleted}
+        editingTask={editingTask}
+      />
+    </section>
+  )
 }
+
+export default App
